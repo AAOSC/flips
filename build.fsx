@@ -172,7 +172,7 @@ Target.create "RunTests" <| fun _ ->
 Target.create "NuGet" <| fun _ ->
     Paket.pack(fun p ->
         { p with
-            OutputPath = bin
+            OutputPath = "bin"
             Version = release.NugetVersion
             ReleaseNotes = Fake.Core.String.toLines release.Notes
             ProjectUrl = repo
