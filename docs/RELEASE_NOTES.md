@@ -1,3 +1,6 @@
+### 2.4.6 - Thursday, October 7th, 2021
+* Updated to Gurobi 912
+
 ### 2.4.5 - Tuesday, May 4th, 2021
 * Updated Google ORTools to 9
 

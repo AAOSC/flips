@@ -167,44 +167,44 @@ and
     | AddDecision of (float * Decision) * LinearExpression
     | Multiply of float * LinearExpression
     | AddLinearExpression of LinearExpression * LinearExpression
-
-
-
-    static member internal Reduce (expr:LinearExpression) : ReducedLinearExpression =
+    
+    static member internal Reduce (expr: LinearExpression) : ReducedLinearExpression =
         let initialState = {
             DecisionTypes = Dictionary()
             Coefficients = Dictionary()
             Offsets = ResizeArray()
         }
-
-        let rec evaluateNode (multiplier:float, state:ReduceAccumulator) (node:LinearExpression) cont =
+        
+        let rec evaluateNode (multiplier: float, state: ReduceAccumulator) (node: LinearExpression) callback =
             match node with
-            | Empty -> cont (multiplier, state)
-            | AddFloat (addToOffset, nodeExpr) -> 
+            | Empty -> callback (multiplier, state)
+            | AddFloat (addToOffset, nodeExpr) ->
                 state.Offsets.Add(multiplier * addToOffset)
-                evaluateNode (multiplier, state) nodeExpr cont
+                evaluateNode (multiplier, state) nodeExpr id |> callback
             | AddDecision ((nodeCoef , nodeDecision), nodeExpr) ->
                 match Dictionary.tryFind nodeDecision.Name state.DecisionTypes with
-                | Some existingType ->
+                | Some(existingType) ->
                     if existingType <> nodeDecision.Type then
                         invalidArg "DecisionType" "Cannot have different DecisionType for same DecisionName"
                     else
                         state.Coefficients.[nodeDecision.Name].Add(nodeCoef * multiplier)
-                        evaluateNode (multiplier, state) nodeExpr cont
+                        evaluateNode (multiplier, state) nodeExpr id |> callback
                 | None ->
                     let newCoefArray = ResizeArray()
                     newCoefArray.Add(multiplier * nodeCoef)
                     state.DecisionTypes.Add(nodeDecision.Name, nodeDecision.Type)
                     state.Coefficients.Add(nodeDecision.Name, newCoefArray)
-                    evaluateNode (multiplier, state) nodeExpr cont
+                    evaluateNode (multiplier, state) nodeExpr id |> callback
             | Multiply (nodeMultiplier, nodeExpr) ->
                 let newMultiplier = multiplier * nodeMultiplier
-                evaluateNode (newMultiplier, state) nodeExpr cont
+                evaluateNode (newMultiplier, state) nodeExpr id |>  callback
             | AddLinearExpression (lExpr, rExpr) ->
-                evaluateNode (multiplier, state) lExpr (fun (_, lState) -> evaluateNode (multiplier, lState) rExpr cont)
-
-        let (_,reduceResult) = evaluateNode (1.0, initialState) expr id
-
+                evaluateNode (multiplier, state) lExpr (fun (_, lState) ->
+                    evaluateNode (multiplier, lState) rExpr id |> callback
+                )
+        
+        let (_, reduceResult) = evaluateNode (1.0, initialState) expr id
+        
         ReducedLinearExpression.OfReduceAccumulator reduceResult
 
     static member internal GetDecisions (expr:LinearExpression) : Set<Decision> =
@@ -395,7 +395,7 @@ type SolverType =
     | CBC
     | GLOP
     | Cplex128
-    | Gurobi900
+    | Gurobi912
 
 
 /// Parameters for the solver
