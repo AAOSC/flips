@@ -402,6 +402,7 @@ type SolverType =
 type SolverSettings = {
     SolverType : SolverType
     MaxDuration : int64
+    OptimalityGap : float
     WriteLPFile : Option<string>
     WriteMPSFile : Option<string>
     // We want to enable this in the next major release

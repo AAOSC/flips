@@ -28,6 +28,7 @@ This one surprised me but has become one of the biggest sticking points. When Fl
 type SolverSettings = {
     SolverType : SolverType
     MaxDuration : int64
+    OptimalityGap : float
     WriteLPFile : Option<string>
     WriteMPSFile : Option<string>
 }
@@ -35,6 +36,7 @@ type SolverSettings = {
 let settings : SolverSettings = {
     SolverType = SolverType.CBC
     MaxDuration = 10_000L
+    OptimalityGap = 0.1
     WriteLPFile = None
     WriteMPSFile = None
 }
