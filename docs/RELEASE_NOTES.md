@@ -1,3 +1,6 @@
+### 2.4.7 - Friday, October 8th, 2021
+* Testing fix to evaluateNode
+
 ### 2.4.6 - Thursday, October 7th, 2021
 * Updated to Gurobi 912
 

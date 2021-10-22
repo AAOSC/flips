@@ -8,7 +8,7 @@
     <Description>A F# library for creating and solving Linear Programming and Mixed Integer Programming Models</Description>
     <Copyright>2020</Copyright>
     <PackageProjectUrl></PackageProjectUrl>
-    <VersionPrefix>2.4.7</VersionPrefix>
+    <VersionPrefix>2.4.9</VersionPrefix>
     <RepositoryUrl>https://github.com/AAOSC/flips</RepositoryUrl>
     <PackageTags>F#, Optimization, Linear Programming, Mixed-Integer Programming</PackageTags>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
