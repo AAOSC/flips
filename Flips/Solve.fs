@@ -169,6 +169,7 @@ module internal ORTools =
             | GLOP -> Solver.CreateSolver("GLOP")
 
         solver.SetTimeLimit(settings.MaxDuration)
+        // TODO: add OptimalityGap Here
 
         // We will enable this in the next major release
         //if settings.EnableOutput then
@@ -336,12 +337,14 @@ module internal Optano =
     let private gurobi912Solve (settings:Types.SolverSettings) (optanoModel:Model) =
         use solver = new Solver.Gurobi912.GurobiSolver()
         solver.Configuration.TimeLimit <- float settings.MaxDuration / 1000.0
+        solver.Configuration.MIPGap <- settings.OptimalityGap
         solver.Solve(optanoModel)
 
 
     let private cplex128Solve (settings:Types.SolverSettings) (optanoModel:Model) =
         use solver = new Solver.Cplex128.CplexSolver()
         solver.Configuration.TimeLimit <- float settings.MaxDuration / 1000.0
+        solver.Configuration.MIPGap <- settings.OptimalityGap
         solver.Solve(optanoModel)
 
 
