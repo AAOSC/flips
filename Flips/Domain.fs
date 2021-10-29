@@ -178,7 +178,8 @@ module Settings =
     let basic =
         {
             SolverType = SolverType.CBC
-            MaxDuration = 10_000L
+            MaxDuration = int64 (5 * 60 * 1000) // 5 min
+            OptimalityGap = 0.1
             WriteLPFile = None
             WriteMPSFile = None
             // We want to enable this in a future major release

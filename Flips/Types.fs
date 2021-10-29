@@ -208,32 +208,32 @@ and
         ReducedLinearExpression.OfReduceAccumulator reduceResult
 
     static member internal GetDecisions (expr:LinearExpression) : Set<Decision> =
-        let rec getRec cont (decisions: Set<Decision>) = function
-            | Empty -> cont decisions
-            | AddFloat (_, expr) -> getRec cont decisions expr
-            | Multiply (_, expr) -> getRec cont decisions expr
-            | AddDecision ((_, decision), expr) -> getRec cont (decisions.Add decision) expr
-            | AddLinearExpression (lExpr, rExpr) -> getRec (fun l -> getRec cont l rExpr) decisions lExpr
+        let rec getRec callback (decisions: Set<Decision>) = function
+            | Empty -> callback decisions
+            | AddFloat (_, expr) -> getRec id decisions expr |> callback
+            | Multiply (_, expr) -> getRec id decisions expr |> callback
+            | AddDecision ((_, decision), expr) -> getRec id (decisions.Add decision) expr |> callback
+            | AddLinearExpression (lExpr, rExpr) -> getRec (fun l -> getRec id l rExpr |> callback) decisions lExpr
         getRec id Set.empty expr
 
     static member internal Evaluate (getDecisionCoef: Decision -> float) (expr:LinearExpression) : float =
 
-        let rec evaluateNode (multiplier:float, state:ResizeArray<float>) (node:LinearExpression) cont =
+        let rec evaluateNode (multiplier:float, state:ResizeArray<float>) (node:LinearExpression) callback =
             match node with
-            | Empty -> cont (multiplier, state)
+            | Empty -> callback (multiplier, state)
             | AddFloat (f, nodeExpr) ->
                 state.Add(multiplier * f)
                 let newState = (multiplier, state) 
-                evaluateNode newState nodeExpr cont
+                evaluateNode newState nodeExpr id |> callback
             | AddDecision ((nodeCoef, nodeDecision), nodeExpr) ->
                 state.Add(multiplier * nodeCoef * getDecisionCoef nodeDecision)
                 let newState = (multiplier, state)
-                evaluateNode newState nodeExpr cont
+                evaluateNode newState nodeExpr id |> callback
             | Multiply (nodeMultiplier, nodeExpr) ->
                 let newState = (multiplier * nodeMultiplier, state)
-                evaluateNode newState nodeExpr cont
+                evaluateNode newState nodeExpr id |> callback
             | AddLinearExpression (lExpr, rExpr) ->
-                evaluateNode (multiplier, state) lExpr (fun (_, lState) -> evaluateNode (multiplier, lState) rExpr cont)
+                evaluateNode (multiplier, state) lExpr (fun (_, lState) -> evaluateNode (multiplier, lState) rExpr id |> callback)
             
 
         let (_,reduceResult) = evaluateNode (1.0, ResizeArray()) expr id

@@ -1,3 +1,9 @@
+### 2.4.8 - Thusday, October 20th, 2021
+* Added OptimalityGap option to solverSettings
+
+### 2.4.7 - Friday, October 8th, 2021
+* fix to evaluateNode
+
 ### 2.4.6 - Thursday, October 7th, 2021
 * Updated to Gurobi 912
 
