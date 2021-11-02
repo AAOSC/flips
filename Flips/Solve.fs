@@ -169,6 +169,7 @@ module internal ORTools =
             | GLOP -> Solver.CreateSolver("GLOP")
 
         solver.SetTimeLimit(settings.MaxDuration)
+        solver.EnableOutput()
         // TODO: add OptimalityGap Here
 
         // We will enable this in the next major release
