@@ -288,6 +288,7 @@ module UnitsOfMeasureTests =
           let settings = {
               SolverType = SolverType.CBC
               MaxDuration = 10_000L
+              OptimalityGap = 0.1
               WriteLPFile = None
               WriteMPSFile = None
           }

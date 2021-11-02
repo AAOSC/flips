@@ -82,6 +82,7 @@ module internal ORTools =
         // https://github.com/matthewcrews/flips/issues/104
         let dictionary = new Dictionary<_, _>()
         let num = constraintExpr.Visit(dictionary)
+        printfn $"num {num}, lb {lb} ub {ub}"
         let c = solver.MakeConstraint(lb - num, ub - num, n)
         for item in dictionary do
             c.SetCoefficient(item.Key, item.Value)
@@ -89,16 +90,22 @@ module internal ORTools =
 
     let private addConstraint (vars:Dictionary<DecisionName, Variable>) (c:Types.Constraint) (solver:Solver) =
         match c.Expression with
-        | Equality (lhs, rhs) -> addEqualityConstraint vars c.Name lhs rhs solver
-        | Inequality (lhs, inequality, rhs) -> addInequalityConstraint vars c.Name lhs rhs inequality solver
+        | Equality (lhs, rhs) -> 
+            printfn "Equality"
+            addEqualityConstraint vars c.Name lhs rhs solver
+        | Inequality (lhs, inequality, rhs) -> 
+            printfn "Inequality"
+            addInequalityConstraint vars c.Name lhs rhs inequality solver
 
 
     let private addConstraints (varMap:Dictionary<DecisionName, Variable>) (constraints:FSharp.Collections.List<Types.Constraint>) (solver:Solver) =
+        printfn "adding constrainets"
         for c in constraints do
             addConstraint varMap c solver |> ignore
 
 
     let private buildSolution (decisions:seq<Decision>) (vars:Dictionary<DecisionName, Variable>) (solver:Solver) (objective:Types.Objective) =
+        printfn "build solution"
         let decisionMap =
             decisions
             |> Seq.map (fun d -> d, Dictionary.tryFind d.Name vars
@@ -149,7 +156,7 @@ module internal ORTools =
         solver
 
     let rec internal solveForObjectives (vars:Dictionary<DecisionName, Variable>) (objectives:Flips.Types.Objective list) (solver:Solver) =
-
+        printfn $"solve call with {objectives}"
         match objectives with
         | [] ->
             failwith "Model without Objective" // Argument should be a special type
@@ -162,14 +169,14 @@ module internal ORTools =
 
 
     let internal solve (solverType:OrToolsSolverType) (settings:SolverSettings) (model:Flips.Model.Model) =
-
+        printfn "solve called"
         let solver =
             match solverType with
             | CBC -> Solver.CreateSolver("CBC")
             | GLOP -> Solver.CreateSolver("GLOP")
 
         solver.SetTimeLimit(settings.MaxDuration)
-
+        solver.EnableOutput()
         // We will enable this in the next major release
         //if settings.EnableOutput then
         //    solver.EnableOutput()
@@ -217,7 +224,7 @@ module internal Optano =
 
     type internal OptanoSolverType =
         | Cplex128
-        | Gurobi900
+        | Gurobi912
 
 
     let private createVariable (DecisionName name:DecisionName) (decisionType:DecisionType) =
@@ -333,15 +340,18 @@ module internal Optano =
         exporter.Write(optanoModel)
 
 
-    let private gurobi900Solve (settings:Types.SolverSettings) (optanoModel:Model) =
-        use solver = new Solver.Gurobi900.GurobiSolver()
+    let private gurobi912Solve (settings:Types.SolverSettings) (optanoModel:Model) =
+        use solver = new Solver.Gurobi912.GurobiSolver()
         solver.Configuration.TimeLimit <- float settings.MaxDuration / 1000.0
+        solver.Configuration.MIPGap <- settings.OptimalityGap
+        solver.Configuration.Method = System.Nullable<int>(3)
         solver.Solve(optanoModel)
 
 
     let private cplex128Solve (settings:Types.SolverSettings) (optanoModel:Model) =
         use solver = new Solver.Cplex128.CplexSolver()
         solver.Configuration.TimeLimit <- float settings.MaxDuration / 1000.0
+        solver.Configuration.MIPGap <- settings.OptimalityGap
         solver.Solve(optanoModel)
 
 
@@ -359,7 +369,7 @@ module internal Optano =
         let optanoSolution =
             match solverType with
             | Cplex128 -> cplex128Solve settings optanoModel
-            | Gurobi900 -> gurobi900Solve settings optanoModel
+            | Gurobi912 -> gurobi912Solve settings optanoModel
 
         match optanoSolution.ModelStatus, optanoSolution.Status with
         | Solver.ModelStatus.Feasible, (Solver.SolutionStatus.Optimal | Solver.SolutionStatus.Feasible) ->
@@ -386,6 +396,6 @@ module Solver =
         | CBC -> ORTools.solve ORTools.OrToolsSolverType.CBC settings model
         | GLOP -> ORTools.solve ORTools.OrToolsSolverType.GLOP settings model
         | Cplex128 -> Optano.solve Optano.OptanoSolverType.Cplex128 settings model
-        | Gurobi900 -> Optano.solve Optano.OptanoSolverType.Gurobi900 settings model
+        | Gurobi912 -> Optano.solve Optano.OptanoSolverType.Gurobi912 settings model
 
 

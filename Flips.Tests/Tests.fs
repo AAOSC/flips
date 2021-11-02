@@ -290,6 +290,7 @@ module Types =
             let settings = {
                 SolverType = SolverType.CBC
                 MaxDuration = 30_000L
+                OptimalityGap = 0.1
                 WriteLPFile = Some "Test.lp"
                 WriteMPSFile = Some "Test.mps"
             }
@@ -388,6 +389,7 @@ module Types =
             let settings = {
                 SolverType = SolverType.CBC
                 MaxDuration = 10_000L
+                OptimalityGap = 0.1
                 WriteLPFile = None
                 WriteMPSFile = None
             }

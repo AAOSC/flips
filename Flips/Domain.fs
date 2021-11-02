@@ -180,6 +180,7 @@ module Settings =
             SolverType = SolverType.CBC
             MaxDuration = 10_000L
             WriteLPFile = None
+            OptimalityGap = 0.1
             WriteMPSFile = None
             // We want to enable this in a future major release
             // EnableOutput = false
